@@ -3,29 +3,23 @@ function [sigma] = Section_efficace(X,Transfo,n_eV,User_Adress)
 % Transfo, Fission/Capture
 % n_eV, energie du neutron incident
 % User_Adress, adresse de la DB
-    item = 0;
-    X = 'Pu239'
-    Transfo = 'Fission'
-    switch X
-        case 'Pu239'
-            item = item + 1;
-        otherwise
-            item = item + 0;
-        
-    end
-    switch Transfo
-        case 'Capture'
-            item = item +10;
-        case 'Fission'
-            item = item +20
-        otherwise
-            item = item + 0;
+% 
+
+    filename = sprintf('data/%s_%s.txt',X,Transfo);
+    DATA = load(filename);    
+    %% Chercheur et Interpolateur
+    flag = 0;
+    i = 1;
+    while (i < length(DATA) && flag == 0) 
+        if  (DATA(i,1)<= n_eV  && n_eV <= DATA(i+1,1))
+            a = (DATA(i+1,2)-DATA(i,2))/(DATA(i+1,1)-DATA(i,1));
+            b = (DATA(i+1,2)*DATA(i,1) - DATA(i,2)*DATA(i+1,1))/(DATA(i,1)-DATA(i+1,1));
+            sigma = a*n_eV + b
+            flag = 1;
+        end
+        i = i+1;
     end
 
-    if item == 21
-        A = load('data/Pu239F.txt');
-        loglog(A(:,1),A(:,2));
-        
 
-    end    
+ 
 end
