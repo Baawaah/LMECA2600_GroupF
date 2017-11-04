@@ -28,6 +28,10 @@ end
 
 function [sigma] = Section_efficace(X,Transfo,n_eV,User_Adress)
 
+%% X = U5, U8, Np9, Pu9
+%% Transfo = Fission, Capture
+%% n_eV = en MeV  
+
 User_Adress = strcat(User_Adress,X);
 
 if Transfo == 'Capture'
@@ -42,7 +46,7 @@ else
 end
 
 tableau = load(User_Adress);
-energy = abs(n_eV - tableau(:,1));
+energy = abs(n_eV - tableau(:,1)); %Cherche la valeur la plus proche
 section = tableau(:,2);
 
 [minEnergy index] = min(energy(:,1));
