@@ -23,3 +23,29 @@ function [sigma] = Section_efficace(X,Transfo,n_eV,User_Adress)
 
  
 end
+
+%%Voilà ce que j'ai fais, on peut modifier pour intégrer l'idée de Son :) 
+
+function [sigma] = Section_efficace(X,Transfo,n_eV,User_Adress)
+
+User_Adress = strcat(User_Adress,X);
+
+if Transfo == 'Capture'
+    if X == 'Pu9'
+        disp('Capture Pu9 pas possible');
+        return;
+    else
+        User_Adress = strcat(User_Adress,'_Capture.txt');
+    end
+else
+    User_Adress = strcat(User_Adress,'_Fission.txt');
+end
+
+tableau = load(User_Adress);
+energy = abs(n_eV - tableau(:,1));
+section = tableau(:,2);
+
+[minEnergy index] = min(energy(:,1));
+sigma = section(index);
+
+end
