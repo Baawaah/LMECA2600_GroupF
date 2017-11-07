@@ -5,13 +5,12 @@ function [sigma] = Section_efficace(X,Transfo,n_eV,User_Adress)
 % User_Adress, adresse de la DB
 % 
 
-
-if Transfo == 'Capture'
-    if X == 'Pu9'
+   if strcmp(X,'Pu9')
+    if strcmp(Transfo,'Capture')
         disp('Capture Pu9 pas possible');
         return;
     end
-end
+   end
 
     filename = sprintf('/%s_%s.txt',X,Transfo);
     filename = strcat(User_Adress,filename);
