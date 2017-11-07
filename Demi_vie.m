@@ -7,7 +7,7 @@ function demi_vie = Demi_vie (X,Transfo)
     switch X
         case 'U235'
             if (Transfo == 'Alpha')
-                demi_vie=7.04 *10^8*Y;
+                demi_vie=7.04*10^6*Y;
             end
         case 'U238'
             if (Transfo == 'Alpha')
@@ -27,7 +27,7 @@ function demi_vie = Demi_vie (X,Transfo)
             end
         case 'Xe135'
             if (Transfo == 'BetaMinus')
-                demi_vie=9.14*h;
+                demi_vie=9.14*h; 
             end
         otherwise 
             disp('Element not in the list');    
