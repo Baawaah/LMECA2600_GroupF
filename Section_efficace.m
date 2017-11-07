@@ -1,7 +1,7 @@
 function [sigma] = Section_efficace(X,Transfo,n_eV,User_Adress)
 % X, espèce chimique
 % Transfo, Fission/Capture
-% n_eV, energie du neutron incident
+% n_eV, energie du neutron incident en MeV
 % User_Adress, adresse de la DB
 % 
 
