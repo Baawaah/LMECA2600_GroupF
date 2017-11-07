@@ -7,14 +7,20 @@ function [sigma] = Section_efficace(X,Transfo,n_eV,User_Adress)
 
    if strcmp(X,'Pu239')
     if strcmp(Transfo,'Capture')
-        disp('Capture Pu9 pas possible');
+        disp('Capture Pu9 Not Possible');
         return;
     end
    end
+ 
 
     filename = sprintf('/%s_%s.txt',X,Transfo);
     filename = strcat(User_Adress,filename);
     DATA = load(filename);    
+    
+    if n_eV > DATA(length(DATA)) || n_eV < DATA(length(1))
+        disp('n_eV out of database boundary');
+        return;
+    end
     %% Chercheur et Interpolateur
     flag = 0;
     i = 1; 
