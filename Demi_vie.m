@@ -15,19 +15,19 @@ function demi_vie = Demi_vie (X,Transfo)
             end
         case 'U239'
             if (Transfo == 'BetaMinus')
-                demi_vie=     23.45*m;
+                demi_vie=23.45*m;
             end
         case 'Np239'
             if (Transfo == 'BetaMinus')
-                demi_vie=     2.356*d;
+                demi_vie=2.356*d;
             end
         case 'Pu239'
             if (Transfo == 'Alpha')
-                demi_vie=     24110*Y;
+                demi_vie=24110*Y;
             end
         case 'Xe135'
-            if strcmp(Transfo,'BetaMinus')
-                demi_vie=      9.14*h;
+            if (Transfo == 'BetaMinus')
+                demi_vie=9.14*h;
             end
         otherwise 
             disp('Element not in the list');    
