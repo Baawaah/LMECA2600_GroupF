@@ -1,1 +1,0 @@
-# LMECA2600_GroupF
