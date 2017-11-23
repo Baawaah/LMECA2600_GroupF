@@ -27,7 +27,7 @@ sigma=10^-24.*[Section_efficace('U235','Fission',n_eV,Path),Section_efficace('U2
     Section_efficace('Pu239','Fission',n_eV,Path)];
 
 sigma
-Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
+Path='C:\Users\Pierre-Yves Legros\Documents\UCL\NuclÃ©aire\Code\DATABASE';
 
     function [y]= fun (t,x)
         
@@ -37,8 +37,19 @@ Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
        y(3)=sigma(3)*phi_n*x(2)-sigma(4)*phi_n*x(3)-lambda(1)*x(3);
        y(4)=lambda(1)*x(3)-sigma(5)*phi_n*x(4)-lambda(2)*x(4);
        y(5)=lambda(2)*x(4)-sigma(6)*phi_n*x(5)-lambda(3)*x(5);
+       y(6)=-sigma(3)*phi_n*x(2);
+       y(7)=sigma(1)*phi_n*x(1) + sigma(2)*phi_n*x(2) + sigma(4)*phi_n*x(3) + sigma(5)*phi_n*x(4) + sigma(6)*phi_n*x(5);
+       
+       %phi_n = 2200*(x(6) + y(6));
        y
     end
+
+ C_0=[(U5_pour*mTot)/molarMass('U235'),(U8_pour*mTot)/molarMass('U238'),0,0,(Pu9_pour*mTot)/molarMass('Pu239'),n_th_init,0];
+X=ode45(@fun,z,C_0)
+plot(X.x,X.y)
+end
+
+
 %%
 % % It calculates ODE using Runge-Kutta 4th order method
 % y=zeros(length(z),5);
@@ -54,7 +65,3 @@ Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
 %     y(i+1,:) = y(i,:) + (1/6)*(k_1+2*k_2+2*k_3+k_4)*h;  % main equation
 % end
 %%
- C_0=[(U5_pour*mTot)/molarMass('U235'),(U8_pour*mTot)/molarMass('U238'),0,0,(Pu9_pour*mTot)/molarMass('Pu239')];
-X=ode45(@fun,z,C_0)
-plot(X.x,X.y)
-end
