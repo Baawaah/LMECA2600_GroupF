@@ -5,7 +5,7 @@ if nargin==0
     Path='./DATABASE';
     X='U235';
     Transfo='Fission';
-    t_final=10^-2;
+    t_final=10;
     n_th_init=10^10;
     mTot=100;
     U5_pour=3/100;
@@ -16,7 +16,7 @@ end
 phi_n=2200*n_th_init*10^-4;
 n_eV=0.025 %eV
 
-h=10^-2;   
+h=10^-4;   
 % z=0:h:t_final;
 z=linspace(0,10^-2,5)
 
@@ -29,24 +29,24 @@ sigma=10^-24.*[Section_efficace('U235','Fission',n_eV,Path),Section_efficace('U2
 sigma
 Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
 
+
     function [y]= fun (t,x)
         
-        y=zeros(5,1);
-       y(1)=-sigma(1)*phi_n*x(1)+lambda(3)*x(5);
-       y(2)=-sigma(2)*phi_n*x(2)-sigma(3)*phi_n*x(2);
-       y(3)=sigma(3)*phi_n*x(2)-sigma(4)*phi_n*x(3)-lambda(1)*x(3);
-       y(4)=lambda(1)*x(3)-sigma(5)*phi_n*x(4)-lambda(2)*x(4);
-       y(5)=lambda(2)*x(4)-sigma(6)*phi_n*x(5)-lambda(3)*x(5);
-       y(6)=-sigma(3)*phi_n*x(2);
-       y(7)=sigma(1)*phi_n*x(1) + sigma(2)*phi_n*x(2) + sigma(4)*phi_n*x(3) + sigma(5)*phi_n*x(4) + sigma(6)*phi_n*x(5);
-       
-       %phi_n = 2200*(x(6) + y(6));
-       y
+       y=zeros(7,1);
+       y(1)=-sigma(1)*phi_n*n_th_init*x(1)+lambda(3)*x(5);
+       y(2)=-sigma(2)*phi_n*n_th_init*x(2)-sigma(3)*phi_n*n_th_init*x(2);
+       y(3)=sigma(3)*phi_n*n_th_init*x(2)-sigma(4)*phi_n*n_th_init*x(3)-lambda(1)*x(3);
+       y(4)=lambda(1)*x(3)-sigma(5)*phi_n*n_th_init*x(4)-lambda(2)*x(4);
+       y(5)=lambda(2)*x(4)-sigma(6)*phi_n*n_th_init*x(5)-lambda(3)*x(5);
+       y(6)=-sigma(3)*phi_n*n_th_init*x(2);
+       y(7)=sigma(1)*phi_n*n_th_init*x(1) + sigma(2)*phi_n*n_th_init*x(2) + sigma(4)*phi_n*n_th_init*x(3) + sigma(5)*phi_n*n_th_init*x(4) + sigma(6)*phi_n*n_th_init*x(5);
+       %y;
+       %phi_n=2200*(x(6)+y(6));
     end
 
- C_0=[(U5_pour*mTot)/molarMass('U235'),(U8_pour*mTot)/molarMass('U238'),0,0,(Pu9_pour*mTot)/molarMass('Pu239'),n_th_init,0];
-X=ode45(@fun,z,C_0)
-plot(X.x,X.y)
+C_0=[(U5_pour*mTot)/molarMass('U235'),(U8_pour*mTot)/molarMass('U238'),0,0,(Pu9_pour*mTot)/molarMass('Pu239'),n_th_init,0];
+X=ode15s(@fun,z,C_0);
+
 end
 
 
