@@ -9,7 +9,7 @@ if nargin==0
     Path='./DATABASE';
     X='U235';
     Transfo='Fission';
-    t_final=600;
+    t_final=500;
     n_th_init=10^10;
     mTot=25;
     U5_pour=3/100;
@@ -19,14 +19,15 @@ if nargin==0
     Poisson_pourc= 0.05 ; 
     mode=3;
 end
-bar_in=0 ; 
+bar_in=0,1896 ; 
+bar_in_pal=0.1896 ;
 phi_n_th=(2200*n_th_init)/V_core;
 phi_n_fast=0;   
 dt=10^-4;
 z=0:dt:t_final;
 Power_target=10^4;
-Power_cible=linspace(1000,5000,5)
-Time=linspace(0,t_final,5)
+Power_cible=linspace(1000,10^5,3)
+Time=linspace(100,t_final-100,3)
 Avogadro=6.022*10^23;
 %% Directory path 
 Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
@@ -130,11 +131,11 @@ k=0;
             
         elseif mode ==3 
             
-            error=Power_now-findpower(t) ;
+            error=findpower(t)-Power_now ;
             k=0.05*dt; %5 max par seconde 
-            if abs(error) > 10^-6 && error > 0
-                bar_in = min(bar_in+k,1) ; 
-            elseif abs(error) > 10^-6 && error < 0
+            if abs(error) > 10^-4 && error > 0
+                bar_in = min(bar_in+k,0.6) ; 
+            elseif abs(error) > 10^-4 && error < 0
                 bar_in=max(bar_in-k,0);
             end
             Power_old = Power_now ;
@@ -164,7 +165,7 @@ Lambda_BC_fast=600+bar_critic*1400;
 U5_burning_rate=(C(1,1)-C(end,1))/C(1,1);
 
 %% Plot des résultats 
-% n=[0,t_final,10^-15,10^3]
+n=[100,t_final,-Inf,Inf]
 
 
 
@@ -195,6 +196,7 @@ hold off ;
 
 figure
 loglog(t,Power_reactor)
+axis(n)
 hold on ; 
 figure
 pie (Power_split(end,:))
