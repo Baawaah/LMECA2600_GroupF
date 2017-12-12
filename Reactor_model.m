@@ -1,4 +1,4 @@
-function [Lambda_BC_thermal,Lambda_BC_fast,U5_burning_rate]= Reactor_model(t_final,n_th_init,mTot,U5_pour,U8_pour,Pu9_pour,Poisson_pourc)
+function [Lambda_BC_thermal,Lambda_BC_fast,U5_burning_rate]= Reactor_model(t_final,n_th_init,mTot,U5_pour,U8_pour,Pu9_pour,Poisson_pourc,mode)
  close all
  
  global  Power_old bar_in;
@@ -9,7 +9,7 @@ if nargin==0
     Path='./DATABASE';
     X='U235';
     Transfo='Fission';
-    t_final=100;
+    t_final=600;
     n_th_init=10^10;
     mTot=25;
     U5_pour=3/100;
@@ -17,12 +17,16 @@ if nargin==0
     Pu9_pour=0;
     V_core=10; %m3;
     Poisson_pourc= 0.05 ; 
+    mode=3;
 end
+bar_in=0 ; 
 phi_n_th=(2200*n_th_init)/V_core;
-phi_n_fast=0; 
-h=10^-2;  
-dt=h;
-z=0:h:t_final;
+phi_n_fast=0;   
+dt=10^-4;
+z=0:dt:t_final;
+Power_target=10^4;
+Power_cible=linspace(1000,5000,5)
+Time=linspace(0,t_final,5)
 Avogadro=6.022*10^23;
 %% Directory path 
 Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
@@ -57,8 +61,22 @@ coef_poison=Poisson_pourc;
 save=0;
 Power_old=0;
 k=0;
+
+
+    function [P]= findpower(t)
+        for i=1:(length(Time)-1)
+            if t>=Time(i) && t<Time(i+1)
+                P=Power_cible(i);
+                return
+            end
+        end
+        P=Power_cible(end);
+        
+    end
+
+
 %% Fonction à résoudre
-    function [y] =fun(~,x)
+    function [y] =fun(t,x)
         
         lambda_rod =[50+bar_in*50,600+bar_in*1400];
         
@@ -82,18 +100,47 @@ k=0;
             +(2*sigma_Np9f_th*phi_n_th+2*sigma_Np9f_fast*phi_n_fast)*x(4)+(2*sigma_Pu9f_th*phi_n_th+2*sigma_Pu9f_fast*phi_n_fast)*x(5))-lambda_Pfp*x(9)-(sigma_Pfp_th*phi_n_th+sigma_Pfp_fast*phi_n_fast)*x(9); %PF*_p
         y(10)=lambda_Pf*x(8)+lambda_Pfp*x(9)+(sigma_Pfp_th*phi_n_th+sigma_Pfp_fast*phi_n_fast)*x(9);
         
-        Power_now =((x(8)+x(9))*200*10^6+lambda_Pf*x(8)*5*10^6+0.025*10^-6*x(7)*lambda_n)/dt;
+        Power_now =((x(8)+x(9))*200*10^6+lambda_Pf*x(8)*5*10^6+0.025*10^-6*x(7)*lambda_n)/dt*1.60218e-19;
+        if mode == 1
+
+            error=Power_now-Power_old;
+            k=0.05*dt ; %5 max par seconde 
+            if abs(error) > 10^-12 && error > 0
+                bar_in = min(bar_in+k,1) ; 
+            elseif abs(error) > 10^-12 && error < 0
+                bar_in=max(bar_in-k,0);
+            end
+            Power_old = Power_now ;
+
+            y(11)=bar_in ; 
+        elseif mode ==2
         
-        error=Power_now-Power_old;
-        k=0.001 ;
-        if abs(error) > 10^-4 && error > 0
-            bar_in = min(bar_in+k*bar_in,1) ; 
-        elseif abs(error) > 10^-4 && error < 0
-            bar_in=max(bar_in-k*bar_in,0);
+          
+            error=Power_now-Power_target ;
+            k=0.05*dt ; %5 max par seconde 
+            if abs(error) > 10^-12 && error > 0
+                bar_in = min(bar_in+k,1) ; 
+            elseif abs(error) > 10^-12 && error < 0
+                bar_in=max(bar_in-k,0);
+            end
+            Power_old = Power_now ;
+
+            y(11)=bar_in ; 
+
+            
+        elseif mode ==3 
+            
+            error=Power_now-findpower(t) ;
+            k=0.05*dt; %5 max par seconde 
+            if abs(error) > 10^-6 && error > 0
+                bar_in = min(bar_in+k,1) ; 
+            elseif abs(error) > 10^-6 && error < 0
+                bar_in=max(bar_in-k,0);
+            end
+            Power_old = Power_now ;
+
+            y(11)=bar_in ; 
         end
-        Power_old = Power_now ;
-        
-        y(11)=bar_in ; 
         
     end
 
@@ -103,14 +150,14 @@ k=0;
  C_0=[(U5_pour*mTot)/(molarMass('U235'))*Avogadro,(U8_pour*mTot)/(molarMass('U238'))*Avogadro,0,0,(Pu9_pour*mTot)/(molarMass('Pu239'))*Avogadro,(10^10),0,0,0,0,0];
 %% Méthode de résolution
  [t,C]=ode45(@(t,x) fun(t,x),z,C_0);
- Power_reactor = ((C(:,8)+C(:,9))*200*10^6+lambda_Pf*C(:,8)*5*10^6+0.025*10^-6*C(:,7)*lambda_n)/dt;
- Power_split = [(C(:,8)+C(:,9))*200*10^6/dt,lambda_Pf*C(:,8)*5*10^6/dt,0.025*10^-6*C(:,7)*lambda_n/dt]
+ Power_reactor = ((C(:,8)+C(:,9))*200*10^6+lambda_Pf*C(:,8)*5*10^6+0.025*10^-6*C(:,7)*lambda_n)/dt*1.60218e-19;
+ Power_split = [(C(:,8)+C(:,9))*200*10^6/dt,lambda_Pf*C(:,8)*5*10^6/dt,0.025*10^-6*C(:,7)*lambda_n/dt]*1.60218e-19;
 %   Avogadro=1 ; 
 
 %% Calcul des outputs
 
 a=(diff((C(:,11)))/dt);
-bar_critic=a(end);
+bar_critic=a(end)
 Lambda_BC_thermal=50+bar_critic*50;
 Lambda_BC_fast=600+bar_critic*1400;
 
