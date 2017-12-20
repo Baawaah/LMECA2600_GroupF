@@ -9,7 +9,7 @@ if nargin==0
     Path='./DATABASE';
     X='U235';
     Transfo='Fission';
-    t_final=500;
+    t_final=150;
     n_th_init=10^10;
     mTot=25;
     U5_pour=3/100;
@@ -17,10 +17,11 @@ if nargin==0
     Pu9_pour=0;
     V_core=10; %m3;
     Poisson_pourc= 0.05 ; 
-    mode=3;
+    mode=4;
 end
-bar_in=0,1896 ; 
+bar_in=0.1896 ; 
 bar_in_pal=0.1896 ;
+nbr_palier = 5;
 phi_n_th=(2200*n_th_init)/V_core;
 phi_n_fast=0;   
 dt=10^-4;
@@ -30,7 +31,7 @@ Power_cible=linspace(1000,10^5,3)
 Time=linspace(100,t_final-100,3)
 Avogadro=6.022*10^23;
 %% Directory path 
-Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
+%Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
 %% Calcul des demi-vies et sections efficaces 
 
 
@@ -128,21 +129,25 @@ k=0;
 
             y(11)=bar_in ; 
 
-            
-        elseif mode ==3 
-            
-            error=findpower(t)-Power_now ;
-            k=0.05*dt; %5 max par seconde 
-            if abs(error) > 10^-4 && error > 0
-                bar_in = min(bar_in+k,0.6) ; 
-            elseif abs(error) > 10^-4 && error < 0
-                bar_in=max(bar_in-k,0);
-            end
-            Power_old = Power_now ;
-
-            y(11)=bar_in ; 
-        end
-        
+        elseif mode == 3
+            delta_t = 10;
+            delta_t_transit = 10;
+            time_bar= bar_in_pal/0.05;
+            t_intermid = 0;
+            i_palier = 1;
+            while i_palier <= nbr_palier
+                if t >= t_intermid && t< t_intermid + delta_t, bar_in = bar_in_pal; end
+                t_intermid = t_intermid + delta_t; 
+                if t >= t_intermid && t< t_intermid + time_bar, bar_in = max(bar_in-0.05*dt,0); end
+                t_intermid = t_intermid + time_bar; 
+                if t >= t_intermid && t< t_intermid + delta_t_transit, bar_in = bar_in; end
+                t_intermid = t_intermid + delta_t_transit; 
+                if t >= t_intermid && t< t_intermid + time_bar, bar_in = min(bar_in+0.05*dt,bar_in_pal); end
+                t_intermid = t_intermid + time_bar; 
+                i_palier = i_palier+1;
+            end              
+            if t >= t_intermid , bar_in = bar_in_pal; end
+        end       
     end
 
 %% Conditions initiales
@@ -195,8 +200,8 @@ legend('U5','U8','U9','Np9','Pu9','n_{th}','n_{fast}','PF*','PF_p','PF')
 hold off ; 
 
 figure
-loglog(t,Power_reactor)
-axis(n)
+plot(t,Power_reactor)
+%axis(n)
 hold on ; 
 figure
 pie (Power_split(end,:))
