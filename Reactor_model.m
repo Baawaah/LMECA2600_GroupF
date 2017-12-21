@@ -2,37 +2,37 @@ function [Lambda_BC_thermal,Lambda_BC_fast,U5_burning_rate]= Reactor_model(t_fin
  close all
  
  global  Power_old bar_in;
-%% Données 
+%% BLOC 1 - Données 
 if nargin==0
     n_eV_th=0.025;
     n_eV_fast=10^6;
     Path='./DATABASE';
     X='U235';
     Transfo='Fission';
-    t_final=150;
+    t_final=10;
     n_th_init=10^10;
     mTot=25;
     U5_pour=3/100;
     U8_pour=97/100 ;
     Pu9_pour=0;
     V_core=10; %m3;
-    Poisson_pourc= 0.05 ; 
-    mode=4;
+    Poisson_pourc= 0.5 ; 
+    mode=1;
 end
-bar_in=0.1896 ; 
+
+bar_in=0 ; 
 bar_in_pal=0.1896 ;
 nbr_palier = 5;
 phi_n_th=(2200*n_th_init)/V_core;
 phi_n_fast=0;   
 dt=10^-4;
 z=0:dt:t_final;
-Power_target=10^4;
-Power_cible=linspace(1000,10^5,3)
-Time=linspace(100,t_final-100,3)
+Power_target=10^5;
+Power_cible=linspace(1000,10^5,3);
+Time=linspace(100,t_final-100,3);
 Avogadro=6.022*10^23;
-%% Directory path 
-%Path='C:\Users\Pierre-Yves Legros\Documents\UCL\Nucléaire\Code\DATABASE';
-%% Calcul des demi-vies et sections efficaces 
+
+%% BLOC 2 - Calcul des demi-vies et sections efficaces 
 
 
 
@@ -60,7 +60,6 @@ sigma_Pfp_th=10^-28*Section_efficace('Xe135','Capture',n_eV_th,Path);
 sigma_Pfp_fast=10^-28*Section_efficace('Xe135','Capture',n_eV_fast,Path);
 coef_poison=Poisson_pourc;
 
-save=0;
 Power_old=0;
 k=0;
 
@@ -77,7 +76,7 @@ k=0;
     end
 
 
-%% Fonction à résoudre
+%% BLOC 3 - Fonction à résoudre
     function [y] =fun(t,x)
         
         lambda_rod =[50+bar_in*50,600+bar_in*1400];
@@ -150,27 +149,27 @@ k=0;
         end       
     end
 
-%% Conditions initiales
+%% BLOC 4 - Conditions initiales
 
-% Avogadro=1 ; 
+
  C_0=[(U5_pour*mTot)/(molarMass('U235'))*Avogadro,(U8_pour*mTot)/(molarMass('U238'))*Avogadro,0,0,(Pu9_pour*mTot)/(molarMass('Pu239'))*Avogadro,(10^10),0,0,0,0,0];
-%% Méthode de résolution
+
  [t,C]=ode45(@(t,x) fun(t,x),z,C_0);
  Power_reactor = ((C(:,8)+C(:,9))*200*10^6+lambda_Pf*C(:,8)*5*10^6+0.025*10^-6*C(:,7)*lambda_n)/dt*1.60218e-19;
  Power_split = [(C(:,8)+C(:,9))*200*10^6/dt,lambda_Pf*C(:,8)*5*10^6/dt,0.025*10^-6*C(:,7)*lambda_n/dt]*1.60218e-19;
-%   Avogadro=1 ; 
+ 
 
-%% Calcul des outputs
+%% BLOC 5 - Calcul des outputs- Plot des résultats
 
 a=(diff((C(:,11)))/dt);
-bar_critic=a(end)
+bar_critic=a(end);
 Lambda_BC_thermal=50+bar_critic*50;
 Lambda_BC_fast=600+bar_critic*1400;
 
 U5_burning_rate=(C(1,1)-C(end,1))/C(1,1);
 
-%% Plot des résultats 
-n=[100,t_final,-Inf,Inf]
+
+n=[0,t_final,-Inf,Inf];
 
 
 
@@ -200,7 +199,10 @@ legend('U5','U8','U9','Np9','Pu9','n_{th}','n_{fast}','PF*','PF_p','PF')
 hold off ; 
 
 figure
-plot(t,Power_reactor)
+loglog(t,Power_reactor)
+xlabel ('Temps [s]') ;
+ylabel ('Power [Watt]') ;
+title ('Puissance du réacteur en fonction du temps');
 %axis(n)
 hold on ; 
 figure
